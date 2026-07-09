@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const { Pool } = require("pg");
+const { Pool, Query } = require("pg");
 require("dotenv").config();
 
 const pool=new Pool({
@@ -11,8 +11,9 @@ const pool=new Pool({
     port:process.env.DATABASE_PORT
 })
 
-app.get("/",async(req,res)=>{
-    res.send("hello world");
+app.get('/user',async(req,res)=>{
+    const result= await pool.query("SELECT * FROM users");
+    res.json(result);
 })
 
 const port = process.env.PORT || 3000;
