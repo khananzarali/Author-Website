@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 const { Pool, Query } = require("pg");
 require("dotenv").config();
+const jwt=require("jsonwebtoken")
+
 
 const pool=new Pool({
     user:process.env.USER,
@@ -11,31 +13,34 @@ const pool=new Pool({
     port:process.env.DATABASE_PORT
 })
 
+
 app.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
-    const user = await pool.query(
+    const result = await pool.query(
         "SELECT * FROM users WHERE user_name = $1",
         [username]
     );
 
-    if (user.rows.length === 0) {
+    const user = result.rows[0];
+
+    if (!user) {
         return res.status(401).json({
-            message: "Invalid username or password",
+            message: "User not found"
         });
     }
 
-    if (user.rows[0].password !== password) {
+    if (user.password !== password) {
         return res.status(401).json({
-            message: "Invalid username or password",
+            message: "Wrong password"
         });
     }
 
-    res.json({
-        message: "Login successful",
-        user: user.rows[0],
+    return res.status(200).json({
+        message: "Login successful"
     });
 });
+
 
 const port = process.env.PORT || 3000;
 

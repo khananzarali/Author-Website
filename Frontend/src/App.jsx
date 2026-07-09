@@ -8,7 +8,9 @@ function App(){
     <nav>
       <Link to="/">Login</Link>
       <Link to="/Writings">Writings</Link>
+      if(role=="admin,user,author"){
       <Link to="/Home">Home</Link>
+      }
     </nav>
     <Routes>
       <Route path="/" element={<Login/>}></Route>
