@@ -1,5 +1,6 @@
 const express = require("express");
 const { Pool } = require("pg");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const app = express();
@@ -39,8 +40,15 @@ app.post("/login", async (req, res) => {
       });
     }
 
+    const token = jwt.sign(
+      { user_name: row.user_name },
+      process.env.JWT_SECRET || "fallback_secret_key",
+      { expiresIn: "1h" }
+    );
+
     res.json({
       message: "Login successful",
+      token: token,
     });
   } catch (error) {
     console.error(error);
@@ -49,6 +57,27 @@ app.post("/login", async (req, res) => {
       message: "Server error",
     });
   }
+});
+
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) return res.status(401).json({ message: "Access token missing" });
+
+  jwt.verify(token, process.env.JWT_SECRET || "fallback_secret_key", (err, user) => {
+    if (err) return res.status(403).json({ message: "Invalid or expired token" });
+    req.user = user;
+    next();
+  });
+};
+
+app.get("/api/protected", authenticateToken, (req, res) => {
+  res.json({
+    message: "This is top secret data!",
+    user: req.user,
+    data: [1, 2, 3, 4, 5]
+  });
 });
 
 app.listen(process.env.PORT, () => {

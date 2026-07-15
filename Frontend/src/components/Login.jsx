@@ -12,7 +12,7 @@ function Login() {
     e.preventDefault();
 
     try {
-      await axios.post(
+      const response = await axios.post(
         "http://localhost:5000/login",
         {
           user_name,
@@ -20,7 +20,7 @@ function Login() {
         }
       );
 
-      localStorage.setItem("loggedIn", "true");
+      localStorage.setItem("token", response.data.token);
 
       navigate("/home");
     } catch (error) {
